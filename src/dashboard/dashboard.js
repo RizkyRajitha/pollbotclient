@@ -101,12 +101,7 @@ export default function Dashboard({ session }) {
 
   return (
     <Box>
-      <Container
-        minH={"100vh"}
-        maxW="container.xl"
-        alignItems={"center"}
-        // bg="#1a202c"
-      >
+      <Container minH={"100vh"} maxW="container.xl" alignItems={"center"}>
         {" "}
         <Flex pt="6">
           <Box p="2">
@@ -117,13 +112,9 @@ export default function Dashboard({ session }) {
             <Button colorScheme="teal" onClick={onOpen}>
               Create Poll
             </Button>
-            {/* <Button colorScheme="teal" onClick={onOpen2}>
-              Add guild
-            </Button> */}
           </Box>
         </Flex>
         <Grid
-          // h='200px'
           templateRows="repeat(2, 1fr)"
           templateColumns="repeat(5, 1fr)"
           gap={4}
@@ -162,7 +153,7 @@ export default function Dashboard({ session }) {
               />
             </ModalBody>
             <ModalFooter>
-              <Button colorScheme="white" mr={3} onClick={onClose}>
+              <Button mr={3} onClick={onClose}>
                 Close
               </Button>
             </ModalFooter>
