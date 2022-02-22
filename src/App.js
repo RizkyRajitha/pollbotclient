@@ -1,23 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+// import "./index.css";
+// import { useState, useEffect } from "react";
+// import { supabase } from "./supabaseClient";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+import Login from "./auth/login";
+import SignUp from "./auth/signup";
+import Dashboard from "./dashboard/dashboard";
+
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
+
+const theme = extendTheme({
+  config: { initialColorMode: "dark" },
+});
 
 function App() {
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    setSession(supabase.auth.session());
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      console.log(session);
+    });
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="">
+      <ChakraProvider theme={theme}>
+        {!session ? (
+          <Login />
+        ) : (
+          <Dashboard key={session.user.id} session={session} />
+        )}
+        {/* <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Login />
+          </Routes>
+        </BrowserRouter> */}
+      </ChakraProvider>
     </div>
   );
 }
