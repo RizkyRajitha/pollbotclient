@@ -3,10 +3,10 @@
 // import { supabase } from "./supabaseClient";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import Login from "./auth/login";
-import SignUp from "./auth/signup";
+// import SignUp from "./auth/signup";
 import Dashboard from "./dashboard/dashboard";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+// import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 

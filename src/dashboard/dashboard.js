@@ -1,29 +1,12 @@
 import {
   Flex,
   Box,
-  FormControl,
-  FormLabel,
-  Input,
-  InputGroup,
-  HStack,
-  InputRightElement,
-  Stack,
   Button,
   Heading,
-  Text,
-  useColorModeValue,
-  Link,
-  FormErrorMessage,
   Container,
-  VStack,
   Grid,
   GridItem,
-  FormHelperText,
-  Textarea,
-  UnorderedList,
-  ListItem,
   Spacer,
-  OrderedList,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -42,9 +25,9 @@ import PollResults from "../components/pollresults";
 
 export default function Dashboard({ session }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [guildData, setguildData] = useState([]);
+  // const [guildData, setguildData] = useState([]);
   const [pollData, setpollData] = useState([]);
-  const [selectedPollData, setselectedPollData] = useState({});
+  const [selectedPollData, setselectedPollData] = useState(null);
   const {
     isOpen: isOpen2,
     onOpen: onOpen2,
@@ -60,7 +43,9 @@ export default function Dashboard({ session }) {
         .eq("userId", session.user.id);
       console.log(guilds);
 
-      setguildData(guilds);
+      if (!error) {
+        // setguildData(guilds);
+      }
 
       if (guilds?.length === 0 || !guilds) {
         onOpen2();
@@ -69,23 +54,27 @@ export default function Dashboard({ session }) {
           .from("polls")
           .select("*")
           .eq("userId", session.user.id);
-        console.log(polls);
-        setpollData(polls);
-        setselectedPollData(polls[0]);
+        if (!error) {
+          console.log(polls);
+          setpollData(polls);
+          setselectedPollData(polls[0]);
+        }
       }
     }
     fetchData();
-  }, []);
+  }, [session, onOpen2]);
 
   const addGuildSuccess = async () => {
     let { data: guilds, error } = await supabase
       .from("guilds")
       .select("*")
       .eq("userId", session.user.id);
-    console.log(guilds);
-    setguildData(guilds);
 
-    onClose2();
+    if (error) {
+      console.log(guilds);
+      // setguildData(guilds);
+      onClose2();
+    }
   };
 
   const addPollSuccess = async () => {
@@ -132,13 +121,14 @@ export default function Dashboard({ session }) {
 
           <GridItem rowSpan={2} colSpan={4}>
             <Box w="100%" p={4} mt="6"></Box>
-            {pollData.length != 0 && guildData.length == 1 ? (
+            {selectedPollData && <PollResults pollData={selectedPollData} />}
+            {/* {pollData.length !== 0 && guildData.length === 1 ? (
               <PollResults pollData={pollData[0]} />
             ) : (
               <Heading size="lg" mt="4">
                 Create your first poll
               </Heading>
-            )}
+            )} */}
           </GridItem>
         </Grid>
         <Modal size="6xl" isOpen={isOpen} onClose={onClose} bg="#1a202c">

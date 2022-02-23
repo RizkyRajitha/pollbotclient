@@ -1,5 +1,5 @@
-import { Box, Badge } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import { Box } from "@chakra-ui/react";
+import React from "react";
 export default function PollResults({ pollData }) {
   console.log(JSON.parse(pollData.options));
 

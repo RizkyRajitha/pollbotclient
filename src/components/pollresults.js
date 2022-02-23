@@ -1,13 +1,13 @@
-import { Box, Badge, Heading } from "@chakra-ui/react";
 import {
+  Box,
+  Heading,
+  Flex,
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
-  TableCaption,
   Button,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
@@ -19,7 +19,7 @@ export default function PollResults({ pollData }) {
   useEffect(() => {
     console.log("pollddd - -- - ", pollData.id);
 
-    const results = supabase
+    supabase
       .from("results")
       .on("*", async (payload) => {
         console.log("Change received!", payload);
@@ -31,7 +31,7 @@ export default function PollResults({ pollData }) {
     console.log("Change subscribe!");
 
     // return results.unsubscribe();
-  }, []);
+  }, [pollData]);
 
   const updateResults = async () => {
     let { data, error } = await supabase
@@ -122,17 +122,6 @@ export default function PollResults({ pollData }) {
               </Tr>
             </Tbody>
           </Table>
-          {/* {Array(5)
-            .fill("")
-            .map((_, i) => (
-              <StarIcon
-                key={i}
-                color={i < property.rating ? "teal.500" : "gray.300"}
-              />
-            ))} */}
-          {/* <Box as="span" ml="2" color="gray.600" fontSize="sm">
-            {property.reviewCount} reviews
-          </Box> */}
         </Box>
         <Box
           display="flex"
@@ -152,7 +141,7 @@ export default function PollResults({ pollData }) {
               {pollResults &&
                 pollResults.map((ele, index) => {
                   return (
-                    <Tr>
+                    <Tr key={index}>
                       <Td>{ele.discordUsername}</Td>
                       <Td>{String(ele.selections[0]).split("_")[0]}</Td>
                     </Tr>
@@ -161,7 +150,11 @@ export default function PollResults({ pollData }) {
             </Tbody>
           </Table>
         </Box>
-        <Button mt={3}>Close</Button>{" "}
+        <Flex justifyContent="end">
+          <Button mt={3} colorScheme="blue">
+            View vote breakdown
+          </Button>
+        </Flex>
       </Box>
     </Box>
   );

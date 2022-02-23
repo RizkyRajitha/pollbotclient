@@ -4,42 +4,17 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
-  Stack,
-  Link,
   Button,
   Heading,
-  Text,
-  useColorModeValue,
   FormErrorMessage,
-  InputGroup,
-  HStack,
-  InputRightElement,
   Container,
-  VStack,
-  Grid,
-  GridItem,
-  FormHelperText,
   Textarea,
-  UnorderedList,
-  ListItem,
   Spacer,
-  OrderedList,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
   Switch,
 } from "@chakra-ui/react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { supabase } from "../supabaseClient";
 import { postApi } from "../util/fetch";
-
-const endpoint = process.env.REACT_APP_ENDPOINT;
 
 export default function CreatePollModal({ session, addPollSuccess }) {
   const {
