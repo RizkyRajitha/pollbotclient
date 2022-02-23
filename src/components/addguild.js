@@ -18,8 +18,7 @@ import {
 } from "@chakra-ui/react";
 import React from "react";
 import { useForm } from "react-hook-form";
-
-const endpoint = process.env.REACT_APP_ENDPOINT;
+import { postApi } from "../util/fetch";
 
 export default function AddGuildModal({ session, addGuildSuccess }) {
   const {
@@ -36,39 +35,18 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
   const cancelRef = React.useRef();
 
   const onSubmit = async (data) => {
-    console.log(data);
-
-    console.log(session);
-    console.log(session.access_token);
-
     try {
-      let res = await fetch(`${endpoint}/v1/addguild`, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { authorization: session.access_token },
-      }).then((res) => res.json());
-      console.log(res.ok);
-
-      if (res.statusCode === 500 || res.statusCode === 400) {
-        console.log(res.message);
-        seterrorMsg(res.message);
-        setIsOpen(true);
-      } else {
-        console.log(res);
-        addGuildSuccess();
-      }
+      let res = await postApi("/v1/addguild", data, session.access_token);
+      console.log(res);
+      addGuildSuccess();
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
+      seterrorMsg(error.message);
+      setIsOpen(true);
     }
   };
   return (
-    <Container
-      // bg="#1a202c"
-      maxW="container.md"
-      alignItems={"center"}
-      mb="4"
-      mt="4"
-    >
+    <Container maxW="container.md" alignItems={"center"} mb="4" mt="4">
       <Flex alignContent="start" alignItems="start" direction="column">
         <Heading mb="4" s="h4" size="md" textAlign="center">
           Step 1 : Invite Poll bot to your discord server{" "}
@@ -85,8 +63,8 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
         </Heading>
       </Flex>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <FormControl id="email" isInvalid={errors.guildid}>
-          <FormLabel>Email </FormLabel>
+        <FormControl id="guildid" isInvalid={errors.guildid}>
+          <FormLabel>Guild (Server) id </FormLabel>
           <Input
             type="text"
             id="guildid"
@@ -99,8 +77,8 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
             {errors.guildid && errors.guildid.message}
           </FormErrorMessage>
         </FormControl>{" "}
-        <FormControl id="email" isInvalid={errors.channelid}>
-          <FormLabel>Email </FormLabel>
+        <FormControl id="channelid" isInvalid={errors.channelid}>
+          <FormLabel>Channel id </FormLabel>
           <Input
             type="text"
             id="channelid"
@@ -142,9 +120,6 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
               <Button ref={cancelRef} onClick={onClose}>
                 Close
               </Button>
-              {/* <Button colorScheme="red" onClick={onClose} ml={3}>
-                Delete
-              </Button> */}
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>

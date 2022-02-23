@@ -45,10 +45,16 @@ export default function PollResults({ pollData, session, reload }) {
 
   useEffect(() => {
     const resultsSubscription = supabase
-      .from("results")
+      .from(`results:pollId=eq.${pollData?.id}`)
       .on("*", async (payload) => {
         console.log("Change received!", payload);
 
+        // set data for first time
+        if (payload.new.pollId !== pollData?.id) {
+          console.log("invalid poll!");
+
+          return;
+        }
         if (pollResultsData.length === 0) {
           setpollResultsData([
             {
@@ -90,8 +96,9 @@ export default function PollResults({ pollData, session, reload }) {
         .receive("ok", () => console.log("left!"));
       console.log("Remove supabase subscription by useEffect unmount ");
     };
-  }, []);
+  }, [pollData?.id]);
 
+  // fetch latest results from the supabase on mount
   useEffect(() => {
     const fetchResults = async () => {
       let { data, error } = await supabase
@@ -112,17 +119,18 @@ export default function PollResults({ pollData, session, reload }) {
     fetchResults();
   }, [pollData?.id]);
 
+  // set formated results for pie graph and table
   useEffect(() => {
-    console.log("update----");
     let obj = {};
 
     let options = JSON.parse(pollData.options).map((ele) => ele.value);
     console.log(options);
-    for (let index = 0; index < options.length; index++) {
-      const element = options[index];
 
+    options.forEach((element, index) => {
       obj[element] = 0;
-    }
+    });
+
+    // for (let index = 0; index < options.length; index++) {}
 
     pollResultsData.forEach((ele) => {
       for (let index = 0; index < options.length; index++) {
@@ -133,9 +141,18 @@ export default function PollResults({ pollData, session, reload }) {
         }
       }
     });
+
     console.log(obj);
     let pieDiagramDatatmp = [];
-    let colorList = ["#E38627", "#C13C37"];
+    let colorList = [
+      "#E38627",
+      "#C13C37",
+      "#C53030",
+      "#ED8936",
+      "#68D391",
+      "#38B2AC",
+      "#3182ce",
+    ];
 
     Object.keys(obj).forEach((element, index) => {
       if (obj[element] !== 0) {
@@ -146,10 +163,11 @@ export default function PollResults({ pollData, session, reload }) {
         });
       }
     });
+
     console.log(pieDiagramDatatmp);
     setPollResultsByOptions(obj);
     setpieDiagramData(pieDiagramDatatmp);
-  }, [pollResultsData, pollData]);
+  }, [pollResultsData, pollData?.id]);
 
   const deletePoll = async () => {
     try {
@@ -166,6 +184,23 @@ export default function PollResults({ pollData, session, reload }) {
       return;
     }
   };
+
+  const endPoll = async () => {
+    try {
+      let res = await postApi(
+        "/v1/endpoll",
+        { pollId: pollData.id },
+        session.access_token
+      );
+      console.log(res);
+      // reload();
+    } catch (error) {
+      setIsErrorOpen(true);
+      seterrorMsg(error.message);
+      return;
+    }
+  };
+
   return (
     <Box maxW="4xl" borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Box p="4">
@@ -193,7 +228,7 @@ export default function PollResults({ pollData, session, reload }) {
                 {pollResultsDataByOptions &&
                   Object.keys(pollResultsDataByOptions).map((ele, index) => {
                     return (
-                      <Tr>
+                      <Tr key={index}>
                         <Td>{String(ele).split("_")[0]}</Td>
                         <Td isNumeric>{pollResultsDataByOptions[ele]}</Td>
                       </Tr>
@@ -226,6 +261,15 @@ export default function PollResults({ pollData, session, reload }) {
           </Box>
         </Box>
         <Flex justifyContent="end">
+          <Button
+            mt={3}
+            mr="2"
+            onClick={endPoll}
+            colorScheme="blue"
+            isDisabled={!pollData.active}
+          >
+            End poll
+          </Button>
           <Button mt={3} mr="2" onClick={deletePoll} colorScheme="blue">
             Delete poll
           </Button>

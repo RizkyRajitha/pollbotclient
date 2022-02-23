@@ -62,11 +62,13 @@ export default function Dashboard({ session }) {
         return;
       }
 
+      // open add guild modal if no guilds are added (intended to run on forst signup)
       if (guilds?.length === 0 || !guilds) {
         onOpenAddGuildModal();
         return;
       }
 
+      // get current polls
       let { data: polls, error: pollerror } = await supabase
         .from("polls")
         .select("*")
@@ -74,46 +76,36 @@ export default function Dashboard({ session }) {
 
       if (pollerror) {
         setIsErrorOpen(true);
-        seterrorMsg(error.message);
+        seterrorMsg(pollerror.message);
         return;
       }
 
       console.log(polls);
       setpollData(polls);
-      setselectedPollData(polls[0]);
+      if (polls.length) {
+        setselectedPollData(polls[0]);
+      }
     }
     fetchData();
-  }, [session, onOpenAddGuildModal]);
+  }, [session]);
 
   const addGuildSuccess = async () => {
-    let { data: guilds, error } = await supabase
-      .from("guilds")
-      .select("*")
-      .eq("userId", session.user.id);
+    // let { data: guilds, error } = await supabase
+    //   .from("guilds")
+    //   .select("*")
+    //   .eq("userId", session.user.id);
 
-    if (error) {
-      console.log(guilds);
-      onCloseAddGuildModal();
-    }
+    // if (error) {
+    //   setIsErrorOpen(true);
+    //   seterrorMsg(error.message);
+    //   return;
+    // }
+    // console.log(guilds);
+    onCloseAddGuildModal();
   };
 
-  const addPollSuccess = async () => {
-    let { data: polls, error: pollerror } = await supabase
-      .from("polls")
-      .select("*")
-      .eq("userId", session.user.id);
-    console.log(polls);
-    console.log(pollerror);
-    setpollData(polls);
-    onClose();
-  };
-
-  const setActivepoll = (index) => {
-    console.log(index);
-    setselectedPollData(pollData[index]);
-  };
-
-  async function fetchData() {
+  // fetch polls after a delete or insert
+  const fetchPolls = async () => {
     let { data: polls, error: pollerror } = await supabase
       .from("polls")
       .select("*")
@@ -124,11 +116,41 @@ export default function Dashboard({ session }) {
       seterrorMsg(pollerror.message);
       return;
     }
-
+    if (polls.length) {
+      setselectedPollData(polls[0]);
+    }
     console.log(polls);
     setpollData(polls);
-    setselectedPollData(polls[0]);
-  }
+
+    if (polls.length) {
+      setselectedPollData(polls[0]);
+    } else {
+      setselectedPollData(null);
+    }
+    onClose();
+  };
+
+  const setActivepoll = (index) => {
+    console.log(index);
+    setselectedPollData(pollData[index]);
+  };
+
+  // async function fetchData() {
+  //   let { data: polls, error: pollerror } = await supabase
+  //     .from("polls")
+  //     .select("*")
+  //     .eq("userId", session.user.id);
+
+  //   if (pollerror) {
+  //     setIsErrorOpen(true);
+  //     seterrorMsg(pollerror.message);
+  //     return;
+  //   }
+
+  //   console.log(polls);
+  //   setpollData(polls);
+  //   setselectedPollData(polls[0]);
+  // }
 
   return (
     <Box>
@@ -154,7 +176,12 @@ export default function Dashboard({ session }) {
             <Box w="100%" p={4} mt="2"></Box>
             {pollData.map((ele, index) => {
               return (
-                <Box w="100%" p={4} onClick={() => setActivepoll(index)}>
+                <Box
+                  w="100%"
+                  p={4}
+                  onClick={() => setActivepoll(index)}
+                  key={index}
+                >
                   <Box
                     borderColor="teal"
                     borderRadius="lg"
@@ -175,7 +202,7 @@ export default function Dashboard({ session }) {
               <PollResults
                 pollData={selectedPollData}
                 session={session}
-                reload={fetchData}
+                reload={fetchPolls}
               />
             )}
             {/* {pollData.length !== 0 && guildData.length === 1 ? (
@@ -193,10 +220,7 @@ export default function Dashboard({ session }) {
             <ModalHeader>Create new Poll</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <CreatePollModal
-                session={session}
-                addPollSuccess={addPollSuccess}
-              />
+              <CreatePollModal session={session} addPollSuccess={fetchPolls} />
             </ModalBody>
             <ModalFooter>
               <Button mr={3} onClick={onClose}>
