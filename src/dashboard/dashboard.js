@@ -15,54 +15,75 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { supabase } from "../supabaseClient";
 import CreatePollModal from "../components/createnewpoll";
 import AddGuildModal from "../components/addguild";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PollItem from "../components/pollitem";
 import PollResults from "../components/pollresults";
 
 export default function Dashboard({ session }) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  // const [guildData, setguildData] = useState([]);
   const [pollData, setpollData] = useState([]);
   const [selectedPollData, setselectedPollData] = useState(null);
+
+  // createn poll dialog
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  // add guild dialog
   const {
-    isOpen: isOpen2,
-    onOpen: onOpen2,
-    onClose: onClose2,
+    isOpen: isOpenAddGuildModal,
+    onOpen: onOpenAddGuildModal,
+    onClose: onCloseAddGuildModal,
   } = useDisclosure();
 
+  //error diaslog
+  const [isErrorOpen, setIsErrorOpen] = React.useState(false);
+  const [errorMsg, seterrorMsg] = React.useState("");
+  const onErrorClose = () => setIsErrorOpen(false);
+  const cancelRef = React.useRef();
+
   useEffect(() => {
-    console.log(session);
     async function fetchData() {
       let { data: guilds, error } = await supabase
         .from("guilds")
         .select("*")
         .eq("userId", session.user.id);
-      console.log(guilds);
 
-      if (!error) {
-        // setguildData(guilds);
+      if (error) {
+        setIsErrorOpen(true);
+        seterrorMsg(error.message);
+        return;
       }
 
       if (guilds?.length === 0 || !guilds) {
-        onOpen2();
-      } else {
-        let { data: polls, error } = await supabase
-          .from("polls")
-          .select("*")
-          .eq("userId", session.user.id);
-        if (!error) {
-          console.log(polls);
-          setpollData(polls);
-          setselectedPollData(polls[0]);
-        }
+        onOpenAddGuildModal();
+        return;
       }
+
+      let { data: polls, error: pollerror } = await supabase
+        .from("polls")
+        .select("*")
+        .eq("userId", session.user.id);
+
+      if (pollerror) {
+        setIsErrorOpen(true);
+        seterrorMsg(error.message);
+        return;
+      }
+
+      console.log(polls);
+      setpollData(polls);
+      setselectedPollData(polls[0]);
     }
     fetchData();
-  }, [session, onOpen2]);
+  }, [session, onOpenAddGuildModal]);
 
   const addGuildSuccess = async () => {
     let { data: guilds, error } = await supabase
@@ -72,8 +93,7 @@ export default function Dashboard({ session }) {
 
     if (error) {
       console.log(guilds);
-      // setguildData(guilds);
-      onClose2();
+      onCloseAddGuildModal();
     }
   };
 
@@ -87,6 +107,28 @@ export default function Dashboard({ session }) {
     setpollData(polls);
     onClose();
   };
+
+  const setActivepoll = (index) => {
+    console.log(index);
+    setselectedPollData(pollData[index]);
+  };
+
+  async function fetchData() {
+    let { data: polls, error: pollerror } = await supabase
+      .from("polls")
+      .select("*")
+      .eq("userId", session.user.id);
+
+    if (pollerror) {
+      setIsErrorOpen(true);
+      seterrorMsg(pollerror.message);
+      return;
+    }
+
+    console.log(polls);
+    setpollData(polls);
+    setselectedPollData(polls[0]);
+  }
 
   return (
     <Box>
@@ -112,8 +154,16 @@ export default function Dashboard({ session }) {
             <Box w="100%" p={4} mt="2"></Box>
             {pollData.map((ele, index) => {
               return (
-                <Box w="100%" p={4}>
-                  <PollItem pollData={ele} key={index} />
+                <Box w="100%" p={4} onClick={() => setActivepoll(index)}>
+                  <Box
+                    borderColor="teal"
+                    borderRadius="lg"
+                    borderWidth={
+                      selectedPollData?.id === ele.id ? "2px" : "0px"
+                    }
+                  >
+                    <PollItem pollData={ele} key={index} />
+                  </Box>
                 </Box>
               );
             })}
@@ -121,7 +171,13 @@ export default function Dashboard({ session }) {
 
           <GridItem rowSpan={2} colSpan={4}>
             <Box w="100%" p={4} mt="6"></Box>
-            {selectedPollData && <PollResults pollData={selectedPollData} />}
+            {selectedPollData && (
+              <PollResults
+                pollData={selectedPollData}
+                session={session}
+                reload={fetchData}
+              />
+            )}
             {/* {pollData.length !== 0 && guildData.length === 1 ? (
               <PollResults pollData={pollData[0]} />
             ) : (
@@ -133,7 +189,7 @@ export default function Dashboard({ session }) {
         </Grid>
         <Modal size="6xl" isOpen={isOpen} onClose={onClose} bg="#1a202c">
           <ModalOverlay />
-          <ModalContent bg="#1a202c">
+          <ModalContent>
             <ModalHeader>Create new Poll</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
@@ -152,28 +208,40 @@ export default function Dashboard({ session }) {
         <Modal
           closeOnOverlayClick={false}
           size="xl"
-          isOpen={isOpen2}
-          onClose={onClose2}
-          bg="#1a202c"
+          isOpen={isOpenAddGuildModal}
+          onClose={onCloseAddGuildModal}
         >
           <ModalOverlay />
           <ModalContent bg="#1a202c">
             <ModalHeader>Add guild</ModalHeader>
-            {/* <ModalCloseButton /> */}
             <ModalBody>
               <AddGuildModal
                 session={session}
                 addGuildSuccess={addGuildSuccess}
               />
             </ModalBody>
-            {/* <ModalFooter>
-                  <Button colorScheme="white" mr={3} onClick={onClose2}>
-                    Close
-                  </Button>
-                </ModalFooter> */}
           </ModalContent>
         </Modal>
       </Container>
+      <AlertDialog
+        isOpen={isErrorOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onErrorClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Error
+            </AlertDialogHeader>
+            <AlertDialogBody>{errorMsg}</AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onErrorClose}>
+                Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 }

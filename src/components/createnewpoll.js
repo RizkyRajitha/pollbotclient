@@ -56,7 +56,7 @@ export default function CreatePollModal({ session, addPollSuccess }) {
   };
   return (
     <Container
-      bg="#1a202c"
+      // bg="#1a202c"
       maxW="container.xl"
       alignItems={"center"}
       mb="4"
