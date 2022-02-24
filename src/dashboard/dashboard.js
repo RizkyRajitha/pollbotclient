@@ -200,7 +200,8 @@ export default function Dashboard({ session }) {
             <Box w="100%" p={4} mt="6"></Box>
             {selectedPollData && (
               <PollResults
-                pollData={selectedPollData}
+                pollId={selectedPollData.id}
+                // pollData={selectedPollData}
                 session={session}
                 reload={fetchPolls}
               />

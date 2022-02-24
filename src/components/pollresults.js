@@ -29,8 +29,9 @@ import { supabase } from "../supabaseClient";
 import { PieChart } from "react-minimal-pie-chart";
 import { postApi } from "../util/fetch";
 
-export default function PollResults({ pollData, session, reload }) {
+export default function PollResults({ pollId, session, reload }) {
   const [pollResultsData, setpollResultsData] = useState([]);
+  const [pollData, setpollData] = useState(null);
   const [pieDiagramData, setpieDiagramData] = useState([]);
   const [pollResultsDataByOptions, setPollResultsByOptions] = useState([]);
 
@@ -42,6 +43,10 @@ export default function PollResults({ pollData, session, reload }) {
   const [errorMsg, seterrorMsg] = React.useState("");
   const onErrorClose = () => setIsErrorOpen(false);
   const cancelRef = React.useRef();
+
+  // loading
+  const [isEndPollLoading, setIsEndPollLoading] = React.useState(false);
+  const [isDeleteollLoading, setIsDeleteollLoading] = React.useState(false);
 
   useEffect(() => {
     const resultsSubscription = supabase
@@ -96,34 +101,60 @@ export default function PollResults({ pollData, session, reload }) {
         .receive("ok", () => console.log("left!"));
       console.log("Remove supabase subscription by useEffect unmount ");
     };
-  }, [pollData?.id]);
+  }, [pollId]);
+
+  const fetchPolls = async () => {
+    let { data: polldata, error: pollerror } = await supabase
+      .from("polls")
+      .select("*")
+      .eq("id", pollId)
+      .single();
+
+    if (pollerror) {
+      console.log(pollerror);
+      setIsErrorOpen(true);
+      seterrorMsg(pollerror.message);
+      return;
+    }
+    console.log(polldata);
+    setpollData(polldata);
+  };
+
+  const fetchPollResults = async () => {
+    let { data, error } = await supabase
+      .from("results")
+      .select("discordUsername,selections,id")
+      .eq("pollId", pollId);
+
+    if (error) {
+      console.log(error);
+      setIsErrorOpen(true);
+      seterrorMsg(error.message);
+      return;
+    }
+    console.log(data);
+    setpollResultsData(data);
+  };
 
   // fetch latest results from the supabase on mount
   useEffect(() => {
     const fetchResults = async () => {
-      let { data, error } = await supabase
-        .from("results")
-        .select("discordUsername,selections,id")
-        .eq("pollId", pollData?.id);
-
-      if (error) {
-        console.log(error);
-        setIsErrorOpen(true);
-        seterrorMsg(error.message);
-        return;
-      }
-      console.log(data);
-      setpollResultsData(data);
+      await fetchPolls();
+      await fetchPollResults();
     };
 
     fetchResults();
-  }, [pollData?.id]);
+  }, [pollId]);
 
   // set formated results for pie graph and table
   useEffect(() => {
+    if (!pollData) {
+      return;
+    }
+
     let obj = {};
 
-    let options = JSON.parse(pollData.options).map((ele) => ele.value);
+    let options = JSON.parse(pollData?.options).map((ele) => ele.value);
     console.log(options);
 
     options.forEach((element, index) => {
@@ -157,7 +188,7 @@ export default function PollResults({ pollData, session, reload }) {
     Object.keys(obj).forEach((element, index) => {
       if (obj[element] !== 0) {
         pieDiagramDatatmp.push({
-          title: element,
+          title: String(element).split("_").slice(0, -1).join(" "),
           value: obj[element],
           color: colorList[index],
         });
@@ -167,37 +198,41 @@ export default function PollResults({ pollData, session, reload }) {
     console.log(pieDiagramDatatmp);
     setPollResultsByOptions(obj);
     setpieDiagramData(pieDiagramDatatmp);
-  }, [pollResultsData, pollData?.id]);
+  }, [pollResultsData, pollData]);
 
   const deletePoll = async () => {
     try {
+      setIsDeleteollLoading(true);
       let res = await postApi(
         "/v1/deletepoll",
         { pollId: pollData.id },
         session.access_token
       );
-      console.log(res);
       reload();
     } catch (error) {
       setIsErrorOpen(true);
       seterrorMsg(error.message);
       return;
+    } finally {
+      setIsDeleteollLoading(false);
     }
   };
 
   const endPoll = async () => {
     try {
+      setIsEndPollLoading(true);
       let res = await postApi(
         "/v1/endpoll",
         { pollId: pollData.id },
         session.access_token
       );
-      console.log(res);
-      // reload();
+      await fetchPolls();
     } catch (error) {
       setIsErrorOpen(true);
       seterrorMsg(error.message);
       return;
+    } finally {
+      setIsEndPollLoading(false);
     }
   };
 
@@ -229,7 +264,7 @@ export default function PollResults({ pollData, session, reload }) {
                   Object.keys(pollResultsDataByOptions).map((ele, index) => {
                     return (
                       <Tr key={index}>
-                        <Td>{String(ele).split("_")[0]}</Td>
+                        <Td>{String(ele).split("_").slice(0, -1).join(" ")}</Td>
                         <Td isNumeric>{pollResultsDataByOptions[ele]}</Td>
                       </Tr>
                     );
@@ -266,11 +301,17 @@ export default function PollResults({ pollData, session, reload }) {
             mr="2"
             onClick={endPoll}
             colorScheme="blue"
-            isDisabled={!pollData.active}
+            isLoading={isEndPollLoading}
           >
-            End poll
+            {!pollData?.active ? "Start poll" : "End poll"}
           </Button>
-          <Button mt={3} mr="2" onClick={deletePoll} colorScheme="blue">
+          <Button
+            mt={3}
+            mr="2"
+            onClick={deletePoll}
+            colorScheme="blue"
+            isLoading={isDeleteollLoading}
+          >
             Delete poll
           </Button>
           <Button mt={3} onClick={onOpen} colorScheme="blue">
@@ -305,7 +346,12 @@ export default function PollResults({ pollData, session, reload }) {
                       return (
                         <Tr key={index}>
                           <Td>{ele.discordUsername}</Td>
-                          <Td>{String(ele.selections[0]).split("_")[0]}</Td>
+                          <Td>
+                            {String(ele.selections[0])
+                              .split("_")
+                              .slice(0, -1)
+                              .join(" ")}
+                          </Td>
                         </Tr>
                       );
                     })}
