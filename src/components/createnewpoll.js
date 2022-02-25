@@ -36,7 +36,6 @@ export default function CreatePollModal({ session, addPollSuccess }) {
   });
   const onSubmit = async (data) => {
     let { data: guildsData, error } = await supabase.from("guilds").select("*");
-    // .eq("userId", session.user.id);
 
     console.log(guildsData);
     console.log(error);
@@ -48,20 +47,12 @@ export default function CreatePollModal({ session, addPollSuccess }) {
 
     console.log(payload);
 
-    // return;
-
     let res = await postApi("/v1/createpoll", payload, session.access_token);
     console.log(res);
     addPollSuccess();
   };
   return (
-    <Container
-      // bg="#1a202c"
-      maxW="container.xl"
-      alignItems={"center"}
-      mb="4"
-      mt="4"
-    >
+    <Container maxW="container.xl" alignItems={"center"} mb="4" mt="4">
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box mr="2" ml="2">
           <FormControl isInvalid={errors.description}>
@@ -96,7 +87,6 @@ export default function CreatePollModal({ session, addPollSuccess }) {
                     id="email"
                     isInvalid={errors.option?.[index]?.option}
                   >
-                    {/* <FormLabel>Email </FormLabel> */}
                     <Input
                       type="text"
                       id="option"
@@ -112,7 +102,6 @@ export default function CreatePollModal({ session, addPollSuccess }) {
                     </FormErrorMessage>
                   </FormControl>
                   <FormControl id="optiondescription" mt="4">
-                    {/* <FormLabel>Email </FormLabel> */}
                     <Input
                       type="text"
                       id="optiondescription"
@@ -122,7 +111,6 @@ export default function CreatePollModal({ session, addPollSuccess }) {
                     />{" "}
                   </FormControl>
                 </Box>
-                {/* <Spacer /> */}
                 <Flex p="2" alignItems="end">
                   <Button
                     colorScheme="red"
@@ -160,7 +148,7 @@ export default function CreatePollModal({ session, addPollSuccess }) {
               });
             }}
           >
-            Append
+            Add option
           </Button>
         </Flex>
       </form>

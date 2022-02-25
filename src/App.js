@@ -1,12 +1,8 @@
-// import "./index.css";
-// import { useState, useEffect } from "react";
-// import { supabase } from "./supabaseClient";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import Login from "./auth/login";
-// import SignUp from "./auth/signup";
 import Dashboard from "./dashboard/dashboard";
 
-// import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 
@@ -37,7 +33,6 @@ function App() {
         {/* <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Login />
           </Routes>

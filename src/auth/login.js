@@ -4,15 +4,23 @@ import {
   FormControl,
   FormLabel,
   Input,
-  Checkbox,
   Stack,
-  Link,
   Button,
   Heading,
-  Text,
   useColorModeValue,
   FormErrorMessage,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from "@chakra-ui/react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { supabase } from "../supabaseClient";
 
@@ -23,18 +31,26 @@ export default function Login() {
     formState: { errors, isSubmitting },
   } = useForm();
 
+  const [isEmailSent, setisEmailSent] = React.useState(false);
+
+  //error dialog
+  const [isErrorOpen, setIsErrorOpen] = React.useState(false);
+  const [errorMsg, seterrorMsg] = React.useState("");
+  const onErrorClose = () => setIsErrorOpen(false);
+  const cancelRef = React.useRef();
+
   const handleLogin = async (data) => {
-    console.log(data);
     try {
       const { error } = await supabase.auth.signIn({
         email: data.email,
-        // password: data.password,
       });
-      if (error) throw error;
-      // alert("Check your email for the login link!");
+      if (error) {
+        throw error;
+      }
+      setisEmailSent(true);
     } catch (error) {
       console.log(error);
-      // alert(error.error_description || error.message);
+      seterrorMsg(error.message);
     }
   };
 
@@ -48,129 +64,86 @@ export default function Login() {
       <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
         <Stack align={"center"}>
           <Heading fontSize={"5xl"}>Login</Heading>
-          {/* <Text fontSize={"lg"} color={"gray.600"}>
-            to enjoy all of our cool <Link color={"blue.400"}>features</Link> ✌️
-          </Text> */}
+          {isEmailSent && (
+            <Alert
+              status="success"
+              variant="subtle"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              textAlign="center"
+              height="200px"
+            >
+              <AlertIcon boxSize="40px" mr={0} />
+              <AlertTitle mt={4} mb={1} fontSize="lg">
+                Email sent!
+              </AlertTitle>
+              <AlertDescription maxWidth="sm">
+                Check your mail to get magic link
+              </AlertDescription>
+            </Alert>
+          )}
         </Stack>
-        <Box
-          rounded={"lg"}
-          bg={useColorModeValue("white", "gray.700")}
-          boxShadow={"lg"}
-          p={8}
-        >
-          <Stack spacing={4}>
-            <form onSubmit={handleSubmit(handleLogin)}>
-              <FormControl id="email" isInvalid={errors.email}>
-                <FormLabel>Email </FormLabel>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="Email"
-                  {...register("email", {
-                    required: "Email is required",
-                  })}
-                />{" "}
-                <FormErrorMessage>
-                  {errors.email && errors.email.message}
-                </FormErrorMessage>
-              </FormControl>
-              {/* <FormControl
-                id="password"
-                isInvalid={errors.password}
-                marginTop="4"
-              >
-                <FormLabel>Password</FormLabel>
-                <Input
-                  type="password"
-                  id="password"
-                  placeholder="Password"
-                  {...register("password", {
-                    required: "Password is required",
-                  })}
-                />{" "}
-                <FormErrorMessage>
-                  {errors.password && errors.password.message}
-                </FormErrorMessage>
-              </FormControl> */}
+        {!isEmailSent && (
+          <Box rounded={"lg"} bg="#374052" boxShadow={"lg"} p={8}>
+            <Stack spacing={4}>
+              <form onSubmit={handleSubmit(handleLogin)}>
+                <FormControl id="email" isInvalid={errors.email}>
+                  <FormLabel>Email </FormLabel>
+                  <Input
+                    type="email"
+                    id="email"
+                    {...register("email", {
+                      required: "Email is required",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.email && errors.email.message}
+                  </FormErrorMessage>
+                </FormControl>
 
-              <Stack spacing={5}>
-                <Stack
-                  direction={{ base: "column", sm: "row" }}
-                  align={"start"}
-                  justify={"space-between"}
-                >
-                  {/* <Checkbox>Remember me</Checkbox>
-                  <Link color={"blue.400"}>Forgot password?</Link> */}
+                <Stack spacing={5}>
+                  <Stack
+                    direction={{ base: "column", sm: "row" }}
+                    align={"start"}
+                    justify={"space-between"}
+                  ></Stack>
+                  <Button
+                    bg={"blue.400"}
+                    color={"white"}
+                    type="submit"
+                    isLoading={isSubmitting}
+                    _hover={{
+                      bg: "blue.500",
+                    }}
+                  >
+                    Login
+                  </Button>
                 </Stack>
-                <Button
-                  bg={"blue.400"}
-                  color={"white"}
-                  type="submit"
-                  isLoading={isSubmitting}
-                  _hover={{
-                    bg: "blue.500",
-                  }}
-                >
-                  Login
-                </Button>
-              </Stack>
-            </form>
-          </Stack>
-        </Box>
+              </form>
+            </Stack>
+          </Box>
+        )}
       </Stack>
+      <AlertDialog
+        isOpen={isErrorOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onErrorClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Error
+            </AlertDialogHeader>
+            <AlertDialogBody>{errorMsg}</AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onErrorClose}>
+                Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Flex>
   );
 }
-
-// import { useState } from "react";
-// import { supabase } from "../supabaseClient";
-
-// export default function Login() {
-//   const [loading, setLoading] = useState(false);
-//   const [email, setEmail] = useState("");
-
-//   const handleLogin = async (email) => {
-//     try {
-//       setLoading(true);
-//       const { error } = await supabase.auth.signIn({ email });
-//       if (error) throw error;
-//       alert("Check your email for the login link!");
-//     } catch (error) {
-//       alert(error.error_description || error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="row flex flex-center">
-//       <div className="col-6 form-widget">
-//         <h1 className="header">Supabase + React</h1>
-//         <p className="description">
-//           Sign in via magic link with your email below
-//         </p>
-//         <div>
-//           <input
-//             className="inputField"
-//             type="email"
-//             placeholder="Your email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//           />
-//         </div>
-//         <div>
-//           <button
-//             onClick={(e) => {
-//               e.preventDefault();
-//               handleLogin(email);
-//             }}
-//             className={"button block"}
-//             disabled={loading}
-//           >
-//             {loading ? <span>Loading</span> : <span>Send magic link</span>}
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

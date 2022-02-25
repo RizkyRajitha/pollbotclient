@@ -60,11 +60,6 @@ export default function PollResults({ pollId, session, reload }) {
     const resultsSubscription = supabase
       .from(`results:pollId=eq.${pollId}`)
       .on("*", async (payload) => {
-        // console.log("Change received!", payload);
-
-        // console.log(pollData);
-        // console.log(pollResultsData);
-
         // set data for first time
         if (payload.new.pollId !== pollId) {
           console.log("invalid poll!");
@@ -85,36 +80,36 @@ export default function PollResults({ pollId, session, reload }) {
           setpollResultsData(pollRes);
           return;
         }
+
         let tempdata = [...pollResultsData];
         console.log(pollResultsData);
+        let added = false;
         for (let index = 0; index < pollResultsData.length; index++) {
-          // pollResultsData.forEach((element, index) => {
-
           const element = pollResultsData[index];
 
-          // console.log(element.pollId);
-          // console.log(payload.new.pollId);
-          if (element.pollId !== payload.new.pollId) {
-            console.log("invalid poll! - for");
-            continue;
-          }
           if (element.id === payload.new.id) {
             console.log("updated");
             tempdata[index].discordUsername = payload.new.discordUsername;
             tempdata[index].id = payload.new.id;
             tempdata[index].selections = payload.new.selections;
             tempdata[index].pollId = payload.new.pollId;
-          } else {
-            tempdata.push({
-              discordUsername: payload.new.discordUsername,
-              id: payload.new.id,
-              selections: payload.new.selections,
-              pollId: payload.new.pollId,
-            });
+            added = true;
+            break;
           }
         }
 
-        // console.log(tempdata);
+        if (!added) {
+          console.log("inserted");
+          tempdata.push({
+            discordUsername: payload.new.discordUsername,
+            id: payload.new.id,
+            selections: payload.new.selections,
+            pollId: payload.new.pollId,
+          });
+        }
+        console.log("tempdata");
+        console.log(tempdata);
+
         setpollResultsData(tempdata);
       })
       .subscribe();
@@ -159,7 +154,7 @@ export default function PollResults({ pollId, session, reload }) {
       return;
     }
     // console.log("results data");
-    // console.log(data);
+    console.log(data);
     setpollResultsData(data);
   };
 
@@ -282,7 +277,7 @@ export default function PollResults({ pollId, session, reload }) {
     <Box maxW="4xl" borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Box p="4">
         <Skeleton isLoaded={!isDataLoading}>
-          <Heading mb="4" >
+          <Heading mb="4">
             {`${pollData?.description ? pollData.description : ""}`}
           </Heading>
 
