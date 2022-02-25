@@ -50,58 +50,74 @@ export default function PollResults({ pollId, session, reload }) {
 
   useEffect(() => {
     const resultsSubscription = supabase
-      .from(`results:pollId=eq.${pollData?.id}`)
+      .from(`results:pollId=eq.${pollId}`)
       .on("*", async (payload) => {
-        console.log("Change received!", payload);
+        // console.log("Change received!", payload);
+
+        // console.log(pollData);
+        // console.log(pollResultsData);
 
         // set data for first time
-        if (payload.new.pollId !== pollData?.id) {
+        if (payload.new.pollId !== pollId) {
           console.log("invalid poll!");
 
           return;
         }
+
+        // set first result
         if (pollResultsData.length === 0) {
-          setpollResultsData([
+          let pollRes = [
             {
-              discordUsername: payload.new.discordUsername,
               id: payload.new.id,
+              discordUsername: payload.new.discordUsername,
               selections: payload.new.selections,
+              pollId: payload.new.pollId,
             },
-          ]);
+          ];
+          setpollResultsData(pollRes);
           return;
         }
         let tempdata = [...pollResultsData];
         console.log(pollResultsData);
-        pollResultsData.forEach((element, index) => {
-          console.log(element.id);
-          console.log(payload.new.id);
+        for (let index = 0; index < pollResultsData.length; index++) {
+          // pollResultsData.forEach((element, index) => {
+
+          const element = pollResultsData[index];
+
+          // console.log(element.pollId);
+          // console.log(payload.new.pollId);
+          if (element.pollId !== payload.new.pollId) {
+            console.log("invalid poll! - for");
+            continue;
+          }
           if (element.id === payload.new.id) {
             console.log("updated");
             tempdata[index].discordUsername = payload.new.discordUsername;
             tempdata[index].id = payload.new.id;
             tempdata[index].selections = payload.new.selections;
+            tempdata[index].pollId = payload.new.pollId;
           } else {
             tempdata.push({
               discordUsername: payload.new.discordUsername,
               id: payload.new.id,
               selections: payload.new.selections,
+              pollId: payload.new.pollId,
             });
           }
-        });
+        }
 
-        console.log(tempdata);
+        // console.log(tempdata);
         setpollResultsData(tempdata);
       })
       .subscribe();
-    console.log("Change subscribe!");
+    console.log("Change subscribe! " + pollId);
 
     return () => {
       resultsSubscription
         .unsubscribe()
-        .receive("ok", () => console.log("left!"));
-      console.log("Remove supabase subscription by useEffect unmount ");
+        .receive("ok", () => console.log("unsubscribed! " + pollId));
     };
-  }, [pollId]);
+  }, [pollId, pollData, pollResultsData]);
 
   const fetchPolls = async () => {
     let { data: polldata, error: pollerror } = await supabase
@@ -116,14 +132,16 @@ export default function PollResults({ pollId, session, reload }) {
       seterrorMsg(pollerror.message);
       return;
     }
-    console.log(polldata);
+    // console.log("poll data");
+
+    // console.log(polldata);
     setpollData(polldata);
   };
 
   const fetchPollResults = async () => {
     let { data, error } = await supabase
       .from("results")
-      .select("discordUsername,selections,id")
+      .select("discordUsername,selections,id,pollId")
       .eq("pollId", pollId);
 
     if (error) {
@@ -132,12 +150,15 @@ export default function PollResults({ pollId, session, reload }) {
       seterrorMsg(error.message);
       return;
     }
-    console.log(data);
+    // console.log("results data");
+    // console.log(data);
     setpollResultsData(data);
   };
 
   // fetch latest results from the supabase on mount
   useEffect(() => {
+    setpollData({});
+    setpollResultsData([]);
     const fetchResults = async () => {
       await fetchPolls();
       await fetchPollResults();
@@ -146,35 +167,79 @@ export default function PollResults({ pollId, session, reload }) {
     fetchResults();
   }, [pollId]);
 
+  // // set formated results for pie graph and table
+  // useEffect(() => {
+  //   if (!pollData) {
+  //     return;
+  //   }
+
+  //   let obj = {};
+
+  //   let options = JSON.parse(pollData?.options).map((ele) => ele.value);
+  //   console.log(options);
+
+  //   options.forEach((element, index) => {
+  //     obj[element] = 0;
+  //   });
+
+  //   // for (let index = 0; index < options.length; index++) {}
+
+  //   pollResultsData.forEach((ele) => {
+  //     for (let index = 0; index < options.length; index++) {
+  //       const element = options[index];
+  //       console.log(element);
+  //       if (ele.selections[0] === element) {
+  //         obj[element] = obj[element] + 1;
+  //       }
+  //     }
+  //   });
+
+  //   console.log(obj);
+  //   let pieDiagramDatatmp = [];
+  //   let colorList = [
+  //     "#E38627",
+  //     "#C13C37",
+  //     "#C53030",
+  //     "#ED8936",
+  //     "#68D391",
+  //     "#38B2AC",
+  //     "#3182ce",
+  //   ];
+
+  //   Object.keys(obj).forEach((element, index) => {
+  //     if (obj[element] !== 0) {
+  //       pieDiagramDatatmp.push({
+  //         title: String(element).split("_").slice(0, -1).join(" "),
+  //         value: obj[element],
+  //         color: colorList[index],
+  //       });
+  //     }
+  //   });
+
+  //   console.log(pieDiagramDatatmp);
+  //   setPollResultsByOptions(obj);
+  //   setpieDiagramData(pieDiagramDatatmp);
+  // }, [pollId, pollResultsData]);
+
   // set formated results for pie graph and table
   useEffect(() => {
-    if (!pollData) {
-      return;
-    }
-
     let obj = {};
 
-    let options = JSON.parse(pollData?.options).map((ele) => ele.value);
-    console.log(options);
-
-    options.forEach((element, index) => {
-      obj[element] = 0;
-    });
-
-    // for (let index = 0; index < options.length; index++) {}
-
     pollResultsData.forEach((ele) => {
-      for (let index = 0; index < options.length; index++) {
-        const element = options[index];
-        console.log(element);
-        if (ele.selections[0] === element) {
-          obj[element] = obj[element] + 1;
-        }
+      let vals = [...ele.selections];
+      console.log(vals);
+      vals.sort((a, b) => a.localeCompare(b));
+      console.log(vals);
+      let sel = vals.join("-");
+      if (obj[sel]) {
+        obj[sel] = obj[sel] + 1;
+      } else {
+        obj[sel] = 1;
       }
     });
 
-    console.log(obj);
     let pieDiagramDatatmp = [];
+    let options = [];
     let colorList = [
       "#E38627",
       "#C13C37",
@@ -186,24 +251,43 @@ export default function PollResults({ pollId, session, reload }) {
     ];
 
     Object.keys(obj).forEach((element, index) => {
-      if (obj[element] !== 0) {
+      console.log("element - ", element);
+
+      let sels = String(element).split("-");
+      if (sels.length > 1) {
+        let votesel = sels.map((ele) => {
+          return String(ele).split("_").slice(0, -1)[0];
+        });
+        console.log(votesel);
         pieDiagramDatatmp.push({
-          title: String(element).split("_").slice(0, -1).join(" "),
+          title: votesel.join(","),
           value: obj[element],
           color: colorList[index],
+        });
+        options.push({ value: obj[element], title: votesel.join(",") });
+      } else {
+        pieDiagramDatatmp.push({
+          title: String(element).split("_").slice(0, -1),
+          value: obj[element],
+          color: colorList[index],
+        });
+        options.push({
+          value: obj[element],
+          title: String(element).split("_").slice(0, -1),
         });
       }
     });
 
+    console.log(options);
     console.log(pieDiagramDatatmp);
-    setPollResultsByOptions(obj);
+    setPollResultsByOptions(options);
     setpieDiagramData(pieDiagramDatatmp);
-  }, [pollResultsData, pollData]);
+  }, [pollId, pollResultsData]);
 
   const deletePoll = async () => {
     try {
       setIsDeleteollLoading(true);
-      let res = await postApi(
+      await postApi(
         "/v1/deletepoll",
         { pollId: pollData.id },
         session.access_token
@@ -221,7 +305,7 @@ export default function PollResults({ pollId, session, reload }) {
   const endPoll = async () => {
     try {
       setIsEndPollLoading(true);
-      let res = await postApi(
+      await postApi(
         "/v1/endpoll",
         { pollId: pollData.id },
         session.access_token
@@ -240,7 +324,7 @@ export default function PollResults({ pollId, session, reload }) {
     <Box maxW="4xl" borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Box p="4">
         <Heading mb="4" mt="4">
-          {`${pollData?.description}  ?`}
+          {`${pollData?.description ? pollData.description : ""}`}
         </Heading>
         <Box display="flex" justifyContent="space-between">
           <Box
@@ -261,11 +345,11 @@ export default function PollResults({ pollId, session, reload }) {
               </Thead>
               <Tbody>
                 {pollResultsDataByOptions &&
-                  Object.keys(pollResultsDataByOptions).map((ele, index) => {
+                  pollResultsDataByOptions.map((ele, index) => {
                     return (
                       <Tr key={index}>
-                        <Td>{String(ele).split("_").slice(0, -1).join(" ")}</Td>
-                        <Td isNumeric>{pollResultsDataByOptions[ele]}</Td>
+                        <Td>{ele.title}</Td>
+                        <Td isNumeric>{ele.value}</Td>
                       </Tr>
                     );
                   })}
@@ -296,11 +380,14 @@ export default function PollResults({ pollId, session, reload }) {
           </Box>
         </Box>
         <Flex justifyContent="end">
+          {/* <Button mt={3} mr="2" onClick={fetchPollResults} colorScheme="green">
+            Refresh poll
+          </Button> */}
           <Button
             mt={3}
             mr="2"
             onClick={endPoll}
-            colorScheme="blue"
+            colorScheme="teal"
             isLoading={isEndPollLoading}
           >
             {!pollData?.active ? "Start poll" : "End poll"}
@@ -309,7 +396,7 @@ export default function PollResults({ pollId, session, reload }) {
             mt={3}
             mr="2"
             onClick={deletePoll}
-            colorScheme="blue"
+            colorScheme="red"
             isLoading={isDeleteollLoading}
           >
             Delete poll
