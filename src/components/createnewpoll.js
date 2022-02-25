@@ -151,12 +151,14 @@ export default function CreatePollModal({ session, addPollSuccess }) {
             colorScheme="teal"
             type="button"
             mr="2"
-            onClick={() =>
+            isDisabled={fields.length > 5}
+            onClick={() => {
+              console.log(fields.length);
               append({
                 option: "Another option",
                 optiondescription: "Option description",
-              })
-            }
+              });
+            }}
           >
             Append
           </Button>

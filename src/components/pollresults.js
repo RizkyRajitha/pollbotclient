@@ -44,6 +44,11 @@ export default function PollResults({ pollId, session, reload }) {
   const onErrorClose = () => setIsErrorOpen(false);
   const cancelRef = React.useRef();
 
+  // delete confirm dialog
+  const [isDeletepollOpen, setisDeletepollOpen] = React.useState(false);
+  const onDeletePollClose = () => setisDeletepollOpen(false);
+  const cancelRefDeletePoll = React.useRef();
+
   // loading
   const [isEndPollLoading, setIsEndPollLoading] = React.useState(false);
   const [isDeleteollLoading, setIsDeleteollLoading] = React.useState(false);
@@ -167,60 +172,6 @@ export default function PollResults({ pollId, session, reload }) {
     fetchResults();
   }, [pollId]);
 
-  // // set formated results for pie graph and table
-  // useEffect(() => {
-  //   if (!pollData) {
-  //     return;
-  //   }
-
-  //   let obj = {};
-
-  //   let options = JSON.parse(pollData?.options).map((ele) => ele.value);
-  //   console.log(options);
-
-  //   options.forEach((element, index) => {
-  //     obj[element] = 0;
-  //   });
-
-  //   // for (let index = 0; index < options.length; index++) {}
-
-  //   pollResultsData.forEach((ele) => {
-  //     for (let index = 0; index < options.length; index++) {
-  //       const element = options[index];
-  //       console.log(element);
-  //       if (ele.selections[0] === element) {
-  //         obj[element] = obj[element] + 1;
-  //       }
-  //     }
-  //   });
-
-  //   console.log(obj);
-  //   let pieDiagramDatatmp = [];
-  //   let colorList = [
-  //     "#E38627",
-  //     "#C13C37",
-  //     "#C53030",
-  //     "#ED8936",
-  //     "#68D391",
-  //     "#38B2AC",
-  //     "#3182ce",
-  //   ];
-
-  //   Object.keys(obj).forEach((element, index) => {
-  //     if (obj[element] !== 0) {
-  //       pieDiagramDatatmp.push({
-  //         title: String(element).split("_").slice(0, -1).join(" "),
-  //         value: obj[element],
-  //         color: colorList[index],
-  //       });
-  //     }
-  //   });
-
-  //   console.log(pieDiagramDatatmp);
-  //   setPollResultsByOptions(obj);
-  //   setpieDiagramData(pieDiagramDatatmp);
-  // }, [pollId, pollResultsData]);
-
   // set formated results for pie graph and table
   useEffect(() => {
     let obj = {};
@@ -278,8 +229,8 @@ export default function PollResults({ pollId, session, reload }) {
       }
     });
 
-    console.log(options);
-    console.log(pieDiagramDatatmp);
+    // console.log(options);
+    // console.log(pieDiagramDatatmp);
     setPollResultsByOptions(options);
     setpieDiagramData(pieDiagramDatatmp);
   }, [pollId, pollResultsData]);
@@ -292,6 +243,7 @@ export default function PollResults({ pollId, session, reload }) {
         { pollId: pollData.id },
         session.access_token
       );
+      onDeletePollClose();
       reload();
     } catch (error) {
       setIsErrorOpen(true);
@@ -395,9 +347,8 @@ export default function PollResults({ pollId, session, reload }) {
           <Button
             mt={3}
             mr="2"
-            onClick={deletePoll}
+            onClick={() => setisDeletepollOpen(true)}
             colorScheme="red"
-            isLoading={isDeleteollLoading}
           >
             Delete poll
           </Button>
@@ -466,6 +417,38 @@ export default function PollResults({ pollId, session, reload }) {
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onErrorClose}>
                 Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+      <AlertDialog
+        isOpen={isDeletepollOpen}
+        leastDestructiveRef={cancelRefDeletePoll}
+        onClose={onDeletePollClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete Customer
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Delete poll {pollData?.description} ? You can't revert this action
+              afterwards.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRefDeletePoll} onClick={onDeletePollClose}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={deletePoll}
+                ml={3}
+                isLoading={isDeleteollLoading}
+              >
+                Delete
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
