@@ -31,6 +31,7 @@ import PollResults from "../components/pollresults";
 
 export default function Dashboard({ session }) {
   const [pollData, setpollData] = useState([]);
+  const [guildData, setguildData] = useState(null);
   const [selectedPollData, setselectedPollData] = useState(null);
 
   // createn poll dialog
@@ -61,6 +62,7 @@ export default function Dashboard({ session }) {
         seterrorMsg(error.message);
         return;
       }
+      setguildData(guilds[0]);
 
       // open add guild modal if no guilds are added (intended to run on forst signup)
       if (guilds?.length === 0 || !guilds) {
@@ -90,17 +92,6 @@ export default function Dashboard({ session }) {
   }, [session]);
 
   const addGuildSuccess = async () => {
-    // let { data: guilds, error } = await supabase
-    //   .from("guilds")
-    //   .select("*")
-    //   .eq("userId", session.user.id);
-
-    // if (error) {
-    //   setIsErrorOpen(true);
-    //   seterrorMsg(error.message);
-    //   return;
-    // }
-    // console.log(guilds);
     onCloseAddGuildModal();
   };
 
@@ -135,27 +126,9 @@ export default function Dashboard({ session }) {
     setselectedPollData(pollData[index]);
   };
 
-  // async function fetchData() {
-  //   let { data: polls, error: pollerror } = await supabase
-  //     .from("polls")
-  //     .select("*")
-  //     .eq("userId", session.user.id);
-
-  //   if (pollerror) {
-  //     setIsErrorOpen(true);
-  //     seterrorMsg(pollerror.message);
-  //     return;
-  //   }
-
-  //   console.log(polls);
-  //   setpollData(polls);
-  //   setselectedPollData(polls[0]);
-  // }
-
   return (
     <Box>
       <Container minH={"100vh"} maxW="container.xl" alignItems={"center"}>
-        {" "}
         <Flex pt="6">
           <Box p="2">
             <Heading size="md">Discord Poll Bot</Heading>
@@ -167,6 +140,17 @@ export default function Dashboard({ session }) {
             </Button>
           </Box>
         </Flex>
+        {guildData && (
+          <Flex pt="2">
+            <Box p="2">
+              <Heading size="md">
+                Guild (server) id : {guildData.guildId}
+              </Heading>
+              <Heading size="md">{`Channel id   : ${guildData.channelId}`}</Heading>
+            </Box>
+            <Spacer />
+          </Flex>
+        )}
         <Grid
           templateRows="repeat(2, 1fr)"
           templateColumns="repeat(5, 1fr)"
@@ -201,18 +185,10 @@ export default function Dashboard({ session }) {
             {selectedPollData && (
               <PollResults
                 pollId={selectedPollData.id}
-                // pollData={selectedPollData}
                 session={session}
                 reload={fetchPolls}
               />
             )}
-            {/* {pollData.length !== 0 && guildData.length === 1 ? (
-              <PollResults pollData={pollData[0]} />
-            ) : (
-              <Heading size="lg" mt="4">
-                Create your first poll
-              </Heading>
-            )} */}
           </GridItem>
         </Grid>
         <Modal size="6xl" isOpen={isOpen} onClose={onClose} bg="#1a202c">

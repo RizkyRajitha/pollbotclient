@@ -23,6 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Badge,
+  Skeleton,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
@@ -50,6 +52,7 @@ export default function PollResults({ pollId, session, reload }) {
   const cancelRefDeletePoll = React.useRef();
 
   // loading
+  const [isDataLoading, setisDataLoading] = React.useState(false);
   const [isEndPollLoading, setIsEndPollLoading] = React.useState(false);
   const [isDeleteollLoading, setIsDeleteollLoading] = React.useState(false);
 
@@ -165,8 +168,10 @@ export default function PollResults({ pollId, session, reload }) {
     setpollData({});
     setpollResultsData([]);
     const fetchResults = async () => {
+      setisDataLoading(true);
       await fetchPolls();
       await fetchPollResults();
+      setisDataLoading(false);
     };
 
     fetchResults();
@@ -246,6 +251,7 @@ export default function PollResults({ pollId, session, reload }) {
       onDeletePollClose();
       reload();
     } catch (error) {
+      console.log(error);
       setIsErrorOpen(true);
       seterrorMsg(error.message);
       return;
@@ -275,87 +281,97 @@ export default function PollResults({ pollId, session, reload }) {
   return (
     <Box maxW="4xl" borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Box p="4">
-        <Heading mb="4" mt="4">
-          {`${pollData?.description ? pollData.description : ""}`}
-        </Heading>
-        <Box display="flex" justifyContent="space-between">
-          <Box
-            display="flex"
-            mt="2"
-            borderWidth="1px"
-            borderRadius="lg"
-            width="sm"
-            alignItems="center"
-            alignSelf="baseline"
-          >
-            <Table variant="simple" maxW="sm">
-              <Thead>
-                <Tr>
-                  <Th>Option</Th>
-                  <Th isNumeric>Vote</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {pollResultsDataByOptions &&
-                  pollResultsDataByOptions.map((ele, index) => {
-                    return (
-                      <Tr key={index}>
-                        <Td>{ele.title}</Td>
-                        <Td isNumeric>{ele.value}</Td>
-                      </Tr>
-                    );
-                  })}
+        <Skeleton isLoaded={!isDataLoading}>
+          <Heading mb="4" >
+            {`${pollData?.description ? pollData.description : ""}`}
+          </Heading>
 
-                <Tr>
-                  <Td color="teal">Total</Td>
-                  <Td isNumeric>{pollResultsData?.length}</Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </Box>
-          <Box
-            display="flex"
-            mt="2"
-            borderWidth="1px"
-            borderRadius="lg"
-            width="sm"
-            alignItems="center"
-            p="4"
-          >
-            <PieChart
-              data={pieDiagramData}
-              label={({ dataEntry }) => dataEntry.value}
-              labelStyle={{
-                fontSize: "5px",
-              }}
-            />
-          </Box>
-        </Box>
-        <Flex justifyContent="end">
-          {/* <Button mt={3} mr="2" onClick={fetchPollResults} colorScheme="green">
+          {pollData?.description && (
+            <Badge pt="1" pb="0.5" variant="outline" colorScheme="purple">
+              {pollData.multichoice ? "Multi choice" : "Single choice"}
+            </Badge>
+          )}
+          <Flex justifyContent="space-between">
+            <Box
+              mt="2"
+              borderWidth="1px"
+              borderRadius="lg"
+              alignItems="center"
+              alignSelf="baseline"
+              minW="sm"
+              maxW="md"
+            >
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th>Option</Th>
+                    <Th isNumeric>Votes</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {pollResultsDataByOptions &&
+                    pollResultsDataByOptions.map((ele, index) => {
+                      return (
+                        <Tr key={index}>
+                          <Td>{ele.title}</Td>
+                          <Td isNumeric>{ele.value}</Td>
+                        </Tr>
+                      );
+                    })}
+
+                  <Tr>
+                    <Td color="teal">Total</Td>
+                    <Td isNumeric>{pollResultsData?.length}</Td>
+                  </Tr>
+                </Tbody>
+              </Table>
+            </Box>
+            <Box
+              display="flex"
+              mt="2"
+              ml="2"
+              borderWidth="1px"
+              borderRadius="lg"
+              minW="sm"
+              maxW="md"
+              alignItems="center"
+              p="4"
+            >
+              <PieChart
+                data={pieDiagramData}
+                label={({ dataEntry }) => dataEntry.value}
+                labelStyle={{
+                  fontSize: "5px",
+                }}
+              />
+            </Box>
+          </Flex>
+          <Flex justifyContent="end">
+            {/* <Button mt={3} mr="2" onClick={fetchPollResults} colorScheme="green">
             Refresh poll
           </Button> */}
-          <Button
-            mt={3}
-            mr="2"
-            onClick={endPoll}
-            colorScheme="teal"
-            isLoading={isEndPollLoading}
-          >
-            {!pollData?.active ? "Start poll" : "End poll"}
-          </Button>
-          <Button
-            mt={3}
-            mr="2"
-            onClick={() => setisDeletepollOpen(true)}
-            colorScheme="red"
-          >
-            Delete poll
-          </Button>
-          <Button mt={3} onClick={onOpen} colorScheme="blue">
-            View vote breakdown
-          </Button>
-        </Flex>
+            <Button
+              mt={3}
+              mr="2"
+              onClick={endPoll}
+              colorScheme="teal"
+              isLoading={isEndPollLoading}
+            >
+              {!pollData?.active ? "Start poll" : "End poll"}
+            </Button>
+            <Button
+              mt={3}
+              mr="2"
+              onClick={() => setisDeletepollOpen(true)}
+              colorScheme="red"
+            >
+              Delete poll
+            </Button>
+            <Button mt={3} onClick={onOpen} colorScheme="blue">
+              View vote breakdown
+            </Button>
+          </Flex>
+        </Skeleton>
       </Box>
 
       <Modal size="lg" isOpen={isOpen} onClose={onClose}>
@@ -375,7 +391,7 @@ export default function PollResults({ pollId, session, reload }) {
                 <Thead>
                   <Tr>
                     <Th>User</Th>
-                    <Th>Vote</Th>
+                    <Th>Vote selection</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
