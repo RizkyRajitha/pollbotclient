@@ -1,7 +1,4 @@
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
-import Login from "./auth/login";
-// import Dashboard from "./dashboard/dashboard";
-
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
@@ -27,11 +24,6 @@ function App() {
   return (
     <div className="">
       <ChakraProvider theme={theme}>
-        {/* {!session ? (
-          <Login />
-        ) : (
-          <Dashboard key={session.user.id} session={session} />
-        )} */}
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Hero />} />

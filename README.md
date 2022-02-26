@@ -1,16 +1,16 @@
 ## Disco-Poll
 
-### Discord poll on steroids
+### Discord polls on steroids
 
-#### Create discord polls with a dashboard and view comprehensive data about the polls realtime and graphical visualization
+#### Create discord polls with a dashboard and view comprehensive data about the polls in realtime and graphical visualization
 
 ![Hero](images/hero.png)
 
 ### Features
 
-1. Get detailed version of votes with user vise vote breakdown
+1. Get a detailed version of votes with user vise vote breakdown
 2. Graphical visualization with pie diagram.
-3. Restrict the poll to be single selection or multi selection.
+3. Restrict the poll to be a single selection or multi selection.
 4. End and start the poll anytime you want.
 5. Realtime vote data (unstable)
 
@@ -30,16 +30,24 @@
 
 ### Scrennshots
 
-![](images/addpoll.png)
+![add guild modal](images/addguildmodal.png)
 
 <br>
 
-![](images/poll%20msg.png)
+![add poll modal](images/addpoll.png)
 
 <br>
 
-![](images/options.png)
+![poll message](images/poll%20msg.png)
 
 <br>
 
-![](images/dashbaord1.png)
+![poll options](images/options.png)
+
+<br>
+
+![dashbaord](images/dashbaord1.png)
+
+<br>
+
+![vote breakdown](images/userbreakdown.png)

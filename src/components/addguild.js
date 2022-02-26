@@ -49,14 +49,14 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
     <Container maxW="container.md" alignItems={"center"} mb="4" mt="4">
       <Flex alignContent="start" alignItems="start" direction="column">
         <Heading mb="4" s="h4" size="md" textAlign="center">
-          Step 1 : Invite Poll bot to your discord server{" "}
+          Step 1 : Invite{" "}
           <Link
             color="blue.200"
             href="https://discord.com/api/oauth2/authorize?client_id=944542855525982268&permissions=206912&scope=bot"
           >
-            qqqq
-          </Link>
-          <Spacer />
+            Poll Bot
+          </Link>{" "}
+          to your discord server <Spacer />
         </Heading>
         <Heading mb="4" s="h4" size="md" textAlign="center">
           Step 2 : Fill following info
@@ -77,7 +77,7 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
             {errors.guildid && errors.guildid.message}
           </FormErrorMessage>
         </FormControl>{" "}
-        <FormControl id="channelid" isInvalid={errors.channelid}>
+        <FormControl mt='2' id="channelid" isInvalid={errors.channelid}>
           <FormLabel>Channel id </FormLabel>
           <Input
             type="text"

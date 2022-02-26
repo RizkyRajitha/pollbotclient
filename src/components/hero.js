@@ -104,14 +104,14 @@ function SimpleThreeColumns() {
           icon={<Icon as={FaChartPie} w={10} h={10} color="teal" />}
           title={"graphical visualization"}
           text={
-            "Get detailed version of votes with user vise vote breakdown and graphical visualization with pie diagram."
+            "Get a detailed version of votes with user vise vote breakdown and graphical visualization with pie diagram."
           }
         />
         <Feature
           icon={<Icon as={FaCheckDouble} w={10} h={10} color="orange" />}
           title={"Single/Multi options"}
           text={
-            "Restrict the poll to be single selection or multi selection .End and start the poll anytime you want."
+            "Restrict the poll to be a single selection or multi selection .End and start the poll anytime you want."
           }
         />
       </SimpleGrid>
