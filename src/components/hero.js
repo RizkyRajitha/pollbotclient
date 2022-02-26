@@ -14,8 +14,7 @@ import {
   VisuallyHidden,
 } from "@chakra-ui/react";
 import { FaChartPie, FaDiscord, FaCheckDouble, FaGithub } from "react-icons/fa";
-export default function Hero(props) {
-  console.log(props);
+export default function Hero() {
   return (
     <>
       <Container minH="93vh" maxW={"5xl"}>
@@ -46,7 +45,7 @@ export default function Hero(props) {
             about the polls realtime and graphical visualization
           </Text>
           <Stack spacing={6} direction={"row"}>
-            <Link href="/app">
+            <Link href="/app" style={{ textDecoration: "none" }}>
               <Button
                 rounded={"full"}
                 px={6}

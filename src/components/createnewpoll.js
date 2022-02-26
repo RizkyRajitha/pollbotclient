@@ -11,6 +11,7 @@ import {
   Textarea,
   Spacer,
   Switch,
+  useToast,
 } from "@chakra-ui/react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { supabase } from "../supabaseClient";
@@ -34,22 +35,44 @@ export default function CreatePollModal({ session, addPollSuccess }) {
     control,
     name: "option",
   });
+
+  const toast = useToast();
+
   const onSubmit = async (data) => {
     let { data: guildsData, error } = await supabase.from("guilds").select("*");
 
-    console.log(guildsData);
-    console.log(error);
+    if (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+      return;
+    }
     let payload = {
       ...data,
       userId: session.user.id,
       channelId: guildsData[0].channelId,
     };
 
-    console.log(payload);
-
-    let res = await postApi("/v1/createpoll", payload, session.access_token);
-    console.log(res);
-    addPollSuccess();
+    // console.log(payload);
+    try {
+      await postApi("/v1/createpoll", payload, session.access_token);
+      addPollSuccess();
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+    // console.log(res);
   };
   return (
     <Container maxW="container.xl" alignItems={"center"} mb="4" mt="4">

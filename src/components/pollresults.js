@@ -61,10 +61,8 @@ export default function PollResults({ pollId, session, reload }) {
     const resultsSubscription = supabase
       .from(`results:pollId=eq.${pollId}`)
       .on("*", async (payload) => {
-        // set data for first time
         if (payload.new.pollId !== pollId) {
           console.log("invalid poll!");
-
           return;
         }
 
@@ -83,13 +81,13 @@ export default function PollResults({ pollId, session, reload }) {
         }
 
         let tempdata = [...pollResultsData];
-        console.log(pollResultsData);
+        // console.log(pollResultsData);
         let added = false;
         for (let index = 0; index < pollResultsData.length; index++) {
           const element = pollResultsData[index];
 
           if (element.id === payload.new.id) {
-            console.log("updated");
+            // console.log("updated");
             tempdata[index].discordUsername = payload.new.discordUsername;
             tempdata[index].id = payload.new.id;
             tempdata[index].selections = payload.new.selections;
@@ -100,7 +98,7 @@ export default function PollResults({ pollId, session, reload }) {
         }
 
         if (!added) {
-          console.log("inserted");
+          // console.log("inserted");
           tempdata.push({
             discordUsername: payload.new.discordUsername,
             id: payload.new.id,
@@ -108,20 +106,20 @@ export default function PollResults({ pollId, session, reload }) {
             pollId: payload.new.pollId,
           });
         }
-        console.log("tempdata");
-        console.log(tempdata);
+        // console.log("tempdata");
+        // console.log(tempdata);
 
         setpollResultsData(tempdata);
       })
       .subscribe();
-    console.log("Change subscribe! " + pollId);
+    // console.log("Change subscribe! " + pollId);
 
     return () => {
-      resultsSubscription
-        .unsubscribe()
-        .receive("ok", () => console.log("unsubscribed! " + pollId));
+      resultsSubscription.unsubscribe();
+      // .receive("ok", () => console.log("unsubscribed! " + pollId));
     };
-  }, [pollId, pollData, pollResultsData]);
+  }, [pollId, pollResultsData]);
+  // }, [pollId, pollData, pollResultsData]);
 
   const fetchPolls = async () => {
     let { data: polldata, error: pollerror } = await supabase
@@ -182,9 +180,9 @@ export default function PollResults({ pollId, session, reload }) {
 
     pollResultsData.forEach((ele) => {
       let vals = [...ele.selections];
-      console.log(vals);
+      // console.log(vals);
       vals.sort((a, b) => a.localeCompare(b));
-      console.log(vals);
+      // console.log(vals);
       let sel = vals.join("-");
       if (obj[sel]) {
         obj[sel] = obj[sel] + 1;
@@ -206,14 +204,14 @@ export default function PollResults({ pollId, session, reload }) {
     ];
 
     Object.keys(obj).forEach((element, index) => {
-      console.log("element - ", element);
+      // console.log("element - ", element);
 
       let sels = String(element).split("-");
       if (sels.length > 1) {
         let votesel = sels.map((ele) => {
           return String(ele).split("_").slice(0, -1)[0];
         });
-        console.log(votesel);
+        // console.log(votesel);
         pieDiagramDatatmp.push({
           title: votesel.join(","),
           value: obj[element],
@@ -269,6 +267,7 @@ export default function PollResults({ pollId, session, reload }) {
       );
       await fetchPolls();
     } catch (error) {
+      console.log(error);
       setIsErrorOpen(true);
       seterrorMsg(error.message);
       return;
@@ -278,7 +277,7 @@ export default function PollResults({ pollId, session, reload }) {
   };
 
   return (
-    <Box maxW="4xl" borderWidth="1px" borderRadius="lg" overflow="hidden">
+    <Box  borderWidth="1px" borderRadius="lg" overflow="hidden">
       <Box p="4">
         <Skeleton isLoaded={!isDataLoading}>
           <Heading mb="4">

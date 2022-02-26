@@ -36,8 +36,8 @@ export default function AddGuildModal({ session, addGuildSuccess }) {
 
   const onSubmit = async (data) => {
     try {
-      let res = await postApi("/v1/addguild", data, session.access_token);
-      console.log(res);
+      await postApi("/v1/addguild", data, session.access_token);
+      // console.log(res);
       addGuildSuccess();
     } catch (error) {
       console.log(error.message);

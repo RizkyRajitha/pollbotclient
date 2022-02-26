@@ -4,8 +4,6 @@ import {
   Button,
   Heading,
   Container,
-  Grid,
-  GridItem,
   Spacer,
   Modal,
   ModalOverlay,
@@ -21,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { supabase } from "../supabaseClient";
 import CreatePollModal from "../components/createnewpoll";
@@ -49,6 +48,7 @@ export default function Dashboard({ session }) {
   const [errorMsg, seterrorMsg] = React.useState("");
   const onErrorClose = () => setIsErrorOpen(false);
   const cancelRef = React.useRef();
+  const [isLargerThan1280] = useMediaQuery("(min-width: 1280px)");
 
   useEffect(() => {
     async function fetchData() {
@@ -74,7 +74,8 @@ export default function Dashboard({ session }) {
       let { data: polls, error: pollerror } = await supabase
         .from("polls")
         .select("*")
-        .eq("userId", session.user.id);
+        .eq("userId", session.user.id)
+        .order("created_at", { ascending: false });
 
       if (pollerror) {
         setIsErrorOpen(true);
@@ -82,7 +83,7 @@ export default function Dashboard({ session }) {
         return;
       }
 
-      console.log(polls);
+      // console.log(polls);
       setpollData(polls);
       if (polls.length) {
         setselectedPollData(polls[0]);
@@ -100,7 +101,8 @@ export default function Dashboard({ session }) {
     let { data: polls, error: pollerror } = await supabase
       .from("polls")
       .select("*")
-      .eq("userId", session.user.id);
+      .eq("userId", session.user.id)
+      .order("created_at", { ascending: false });
 
     if (pollerror) {
       setIsErrorOpen(true);
@@ -110,7 +112,7 @@ export default function Dashboard({ session }) {
     if (polls.length) {
       setselectedPollData(polls[0]);
     }
-    console.log(polls);
+    // console.log(polls);
     setpollData(polls);
 
     if (polls.length) {
@@ -122,7 +124,7 @@ export default function Dashboard({ session }) {
   };
 
   const setActivepoll = (index) => {
-    console.log(index);
+    // console.log(index);
     setselectedPollData(pollData[index]);
   };
 
@@ -151,18 +153,19 @@ export default function Dashboard({ session }) {
             <Spacer />
           </Flex>
         )}
-        <Grid
-          templateRows="repeat(2, 1fr)"
-          templateColumns="repeat(5, 1fr)"
-          gap={4}
+
+        <Flex
+          justifyContent="space-between"
+          flexDirection={isLargerThan1280 ? "row" : "column"}
         >
-          <GridItem rowSpan={2} colSpan={1}>
-            <Box w="100%" p={4} mt="2"></Box>
+          <Box>
             {pollData.map((ele, index) => {
               return (
                 <Box
                   w="100%"
-                  p={4}
+                  // p={4}
+                  pt='4'
+                  pb='4'
                   onClick={() => setActivepoll(index)}
                   key={index}
                 >
@@ -178,10 +181,8 @@ export default function Dashboard({ session }) {
                 </Box>
               );
             })}
-          </GridItem>
-
-          <GridItem rowSpan={2} colSpan={4}>
-            <Box w="100%" p={4} mt="6"></Box>
+          </Box>
+          <Box>
             {selectedPollData && (
               <PollResults
                 pollId={selectedPollData.id}
@@ -189,8 +190,8 @@ export default function Dashboard({ session }) {
                 reload={fetchPolls}
               />
             )}
-          </GridItem>
-        </Grid>
+          </Box>
+        </Flex>
         <Modal size="6xl" isOpen={isOpen} onClose={onClose} bg="#1a202c">
           <ModalOverlay />
           <ModalContent>
