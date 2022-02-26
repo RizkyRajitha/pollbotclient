@@ -53,6 +53,7 @@ export default function PollResults({ pollId, session, reload }) {
 
   // loading
   const [isDataLoading, setisDataLoading] = React.useState(false);
+  const [isFetchDataLoading, setisFetchDataLoading] = React.useState(false);
   const [isEndPollLoading, setIsEndPollLoading] = React.useState(false);
   const [isDeleteollLoading, setIsDeleteollLoading] = React.useState(false);
 
@@ -142,6 +143,7 @@ export default function PollResults({ pollId, session, reload }) {
   };
 
   const fetchPollResults = async () => {
+    setisFetchDataLoading(true);
     let { data, error } = await supabase
       .from("results")
       .select("discordUsername,selections,id,pollId")
@@ -150,12 +152,14 @@ export default function PollResults({ pollId, session, reload }) {
     if (error) {
       console.log(error);
       setIsErrorOpen(true);
+      setisFetchDataLoading(false);
       seterrorMsg(error.message);
       return;
     }
     // console.log("results data");
-    console.log(data);
+    // console.log(data);
     setpollResultsData(data);
+    setisFetchDataLoading(false);
   };
 
   // fetch latest results from the supabase on mount
@@ -193,10 +197,10 @@ export default function PollResults({ pollId, session, reload }) {
     let options = [];
     let colorList = [
       "#E38627",
-      "#C13C37",
+      "#68D391",
+      "#2b6cb0",
       "#C53030",
       "#ED8936",
-      "#68D391",
       "#38B2AC",
       "#3182ce",
     ];
@@ -342,9 +346,15 @@ export default function PollResults({ pollId, session, reload }) {
             </Box>
           </Flex>
           <Flex justifyContent="end">
-            {/* <Button mt={3} mr="2" onClick={fetchPollResults} colorScheme="green">
-            Refresh poll
-          </Button> */}
+            <Button
+              mt={3}
+              mr="2"
+              onClick={fetchPollResults}
+              colorScheme="green"
+              isLoading={isFetchDataLoading}
+            >
+              Refresh poll
+            </Button>
             <Button
               mt={3}
               mr="2"

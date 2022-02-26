@@ -4,7 +4,15 @@
 
 #### Create discord polls with a dashboard and view comprehensive data about the polls in realtime and graphical visualization
 
+<br>
+
+### Visit [Disco-poll](https://disco-poll.netlify.app/)
+
+<br>
+
 ![Hero](images/hero.png)
+
+<br>
 
 ### Features
 
@@ -14,12 +22,17 @@
 4. End and start the poll anytime you want.
 5. Realtime vote data (unstable)
 
+### Demo
+
+![Demo](images/pollgif.gif)
+
 ### Made with
 
 1. [React](https://reactjs.org)
 2. [Supabase](https://supabase.io)
 3. [Fastify](https://www.fastify.io)
 4. [Discord.js](https://discord.js.org)
+5. [Chakra-ui](chakra-ui.com/)
 
 ### Hosted on
 
@@ -46,8 +59,12 @@
 
 <br>
 
-![dashbaord](images/dashbaord1.png)
+![dashbaord](images/dashboard1.png)
 
 <br>
 
-![vote breakdown](images/userbreakdown.png)
+![vote breakdown](images/votebreakdown.png)
+
+### Info
+
+[Server Repo](https://github.com/RizkyRajitha/pollbotserver)
