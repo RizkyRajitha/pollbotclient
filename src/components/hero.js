@@ -38,7 +38,7 @@ export default function Hero(props) {
             lineHeight={"110%"}
             color={"purple.400"}
           >
-            Discord poll on steroids
+            Discord polls on steroids
           </Heading>
 
           <Text color={"gray.500"} maxW={"2xl"}>
