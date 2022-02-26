@@ -59,7 +59,7 @@
 
 <br>
 
-![dashbaord](images/dashboard1.png)
+![dashbaord](images/dashbaordnew.png)
 
 <br>
 
