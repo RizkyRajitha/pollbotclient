@@ -1,9 +1,13 @@
-import { Box } from "@chakra-ui/react";
+import { Badge, Box, useMediaQuery } from "@chakra-ui/react";
 import React from "react";
+import { formatDistance } from "date-fns";
 export default function PollResults({ pollData }) {
+  const [isLargerThan1280] = useMediaQuery("(min-width: 1280px)");
+
   return (
     <Box
-      width="xs"
+      Box
+      maxW={isLargerThan1280 ? "sm" : "full"}
       borderWidth="1px"
       borderRadius="lg"
       overflow="hidden"
@@ -18,6 +22,13 @@ export default function PollResults({ pollData }) {
           isTruncated
         >
           {pollData.description}
+        </Box>
+        <Box>
+          <Badge colorScheme="teal" isTruncated variant="outline" pt="0.5">
+            {formatDistance(new Date(pollData.created_at), new Date(), {
+              addSuffix: true,
+            })}
+          </Badge>
         </Box>
 
         <Box display="flex" mt="2" alignItems="center">
