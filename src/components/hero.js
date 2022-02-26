@@ -176,6 +176,9 @@ function SmallWithSocial() {
           <Link color="purple.200" href="https://discord.js.org/">
             Discord.js
           </Link>{" "}
+          <Link color="purple.200" href="chakra-ui.com/">
+            Chakra-UI
+          </Link>{" "}
           Hosted on{" "}
           <Link color="purple.200" href="https://www.netlify.com/">
             Netlify
